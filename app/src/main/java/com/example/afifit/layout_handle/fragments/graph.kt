@@ -1,43 +1,33 @@
 package com.example.afifit.layout_handle.fragments
 
+import BloodOxygenData
+import android.graphics.Color
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import com.example.afifit.data.BpmData
 import com.example.afifit.databinding.FragmentGraphBinding
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.github.mikephil.charting.data.LineData
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import data.HealthData
-
 
 class graph : Fragment() {
 
-
-
     private var _binding: FragmentGraphBinding? = null
     private val binding get() = _binding!!
-    private lateinit var databaseReference: DatabaseReference
 
+    private val bpmDataList = mutableListOf<BpmData>()
+    private val bloodOxygenDataList = mutableListOf<BloodOxygenData>()
 
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-
-        }
-    }
-
+    private lateinit var lineChart: LineChart
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,55 +40,74 @@ class graph : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        databaseReference = FirebaseDatabase.getInstance().reference.child("healthData")
+        lineChart = binding.lineChart
 
+        val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().getReference("/bpm")
 
         // Attach a listener to read the data
-        databaseReference.addValueEventListener(object : ValueEventListener {
+        databaseReference.orderByChild("timestamp").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val healthDataList = mutableListOf<HealthData>()
+                bpmDataList.clear()
+                bloodOxygenDataList.clear()
 
                 for (dataSnapshotChild in dataSnapshot.children) {
-                    val healthData = dataSnapshotChild.getValue(HealthData::class.java)
-                    healthData?.let {
-                        healthDataList.add(it)
-                    }
+                    val bpm = dataSnapshotChild.child("bpm").getValue(Float::class.java)
+                    val bloodOxygen = dataSnapshotChild.child("bloodOxygen").getValue(Float::class.java)
+                    val avgBpm = dataSnapshotChild.child("avgBpm").getValue(Long::class.java) // Retrieve as Long
+                    val timestamp = dataSnapshotChild.child("timestamp").getValue(Long::class.java)
+
+                    val bpmData = BpmData(bpm ?: 0.0f, timestamp ?: 0L, avgBpm?.toFloat() ?: 0.0f)
+                    val bloodOxygenData = BloodOxygenData(bloodOxygen ?: 0f, timestamp ?: 0L)
+
+                    bpmDataList.add(bpmData)
+                    bloodOxygenDataList.add(bloodOxygenData)
                 }
 
                 // Update line chart with retrieved health data
-                updateLineChart(healthDataList)
+                updateLineChart()
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
                 // Handle errors
             }
         })
-
     }
-    private fun updateLineChart(healthDataList: List<HealthData>) {
-        val lineChart: LineChart = binding.lineChart
-        val entries: MutableList<Entry> = mutableListOf()
 
-        for ((index, healthData) in healthDataList.withIndex()) {
-            // Assuming you want to show the BPM in the graph
-            entries.add(Entry(index.toFloat(), healthData.bpm.toFloat()))
+    private fun updateLineChart() {
+        val entriesBpm = mutableListOf<Entry>()
+        val entriesBloodOxygen = mutableListOf<Entry>()
+
+        for (data in bpmDataList) {
+            entriesBpm.add(Entry(data.timestamp.toFloat(), data.bpm))
         }
 
-        val dataSet = LineDataSet(entries, "BPM Progress")
-        val lineDataSets: MutableList<ILineDataSet> = mutableListOf()
-        lineDataSets.add(dataSet)
+        for (data in bloodOxygenDataList) {
+            entriesBloodOxygen.add(Entry(data.timestamp.toFloat(), data.bloodOxygen))
+        }
 
-        val lineData = LineData(lineDataSets)
+        entriesBpm.sortBy { it.x }
+        entriesBloodOxygen.sortBy { it.x }
+
+        val dataSetBpm = LineDataSet(entriesBpm, "BPM")
+        dataSetBpm.color = Color.BLUE
+        dataSetBpm.valueTextColor = Color.BLACK
+
+        val dataSetBloodOxygen = LineDataSet(entriesBloodOxygen, "Blood Oxygen")
+        dataSetBloodOxygen.color = Color.RED
+        dataSetBloodOxygen.valueTextColor = Color.BLACK
+
+        val lineData = LineData(dataSetBpm, dataSetBloodOxygen)
         lineChart.data = lineData
 
-        // Customize the line chart appearance
-        lineChart.description = Description().apply { text = "BPM Progress Over Time" }
-        lineChart.setTouchEnabled(true)
-        lineChart.setPinchZoom(true)
+        // Set any additional styling or configurations for your line chart as needed
+        // ...
 
-        // Refresh the chart
-        lineChart.invalidate()
+        lineChart.notifyDataSetChanged() // Notify the chart that the data has changed
+        lineChart.invalidate() // Refresh the chart
     }
 
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

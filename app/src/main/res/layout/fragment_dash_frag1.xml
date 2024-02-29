@@ -173,28 +173,48 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:src="@drawable/heartbeat"
+            android:orientation="horizontal"
+            android:layout_gravity="center">
+            <com.airbnb.lottie.LottieAnimationView
+                android:layout_marginStart="20dp"
                 android:paddingTop="5dp"
-                android:paddingStart="10dp"/>
-
-            <TextView
-                android:paddingTop="5dp"
-                android:id="@+id/bpm"
+                android:layout_width="100dp"
+                android:layout_height="70dp"
+                app:lottie_rawRes="@raw/heartb"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true" />
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:textStyle="normal|bold"
-                android:textSize="18sp"
-                android:text="82"
+                android:orientation="vertical"
+                android:layout_gravity="center">
+
+            <TextView
+                android:id="@+id/bpm"
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:paddingTop="5dp"
+                android:text="BPM"
+                android:fontFamily="@font/allerta"
                 android:textAllCaps="false"
-                android:layout_marginStart="20dp"/>
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="normal|bold"/>
+
+                <TextView
+                    android:id="@+id/time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:paddingTop="5dp"
+                    android:text="Time:"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="normal|bold" />
+            </LinearLayout>
             <TextView
                 android:paddingTop="5dp"
                 android:layout_marginStart="5dp"
@@ -203,14 +223,13 @@
                 android:textColor="@color/black"
                 android:textStyle="normal|bold"
                 android:textSize="18sp"
-                android:text="bpm"
                 android:textAllCaps="false"/>
 
             <com.airbnb.lottie.LottieAnimationView
                 android:layout_marginStart="20dp"
                 android:paddingTop="5dp"
                 android:layout_width="100dp"
-                android:layout_height="30dp"
+                android:layout_height="70dp"
                 app:lottie_rawRes="@raw/pulse"
                 app:lottie_autoPlay="true"
                 app:lottie_loop="true" />
@@ -256,7 +275,7 @@
                     android:src="@drawable/thermometer" />
                 <TextView
                     android:text="Temperature"
-                    android:textSize="20sp"
+                    android:textSize="15sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
 
@@ -294,13 +313,14 @@
                     android:src="@drawable/oxygen" />
                 <TextView
                     android:text="Oxygen"
-                    android:textSize="20sp"
+                    android:textSize="15sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/black"/>
                 <TextView
                     android:id="@+id/OxyValue"
-                    android:text="77"
+                    android:text=""
+                    android:fontFamily="@font/allerta"
                     android:textSize="15sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -329,19 +349,21 @@
                     android:layout_marginTop="10dp"
                     android:src="@drawable/lungs" />
                 <TextView
-                    android:id="@+id/intro_text"
-                    android:text="BreatheRate"
-                    android:textSize="20sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/black"/>
-                <TextView
-                    android:id="@+id/BreathValue"
-                    android:text="75 /min"
+
+                    android:text="Resp Rate"
                     android:textSize="15sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/black"/>
+                <TextView
+                    android:id="@+id/brr"
+                    android:text=""
+                    android:textSize="18sp"
+                    android:fontFamily="@font/allerta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"/>
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
