@@ -2,6 +2,7 @@ package com.example.afifit
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentManager
 
 import com.example.afifit.databinding.ActivityDashBinding
 import com.example.afifit.layout_handle.fragments.drugs
@@ -25,7 +26,8 @@ class dash : AppCompatActivity() {
         binding.bottomNavView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_home -> {
-                    finish()
+                    supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
                     true
                 }
                 R.id.navigation_nutrition -> {
