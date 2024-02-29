@@ -26,6 +26,8 @@ import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.afifit.R
 import com.example.afifit.databinding.FragmentEditProfileBinding
 import com.google.firebase.database.DatabaseReference
@@ -47,7 +49,7 @@ class edit_profile : Fragment() {
     private lateinit var buttonSelectImage: TextView
     private lateinit var buttonPushData: Button
 
-    private companion object {
+    companion object {
         const val REQUEST_IMAGE_PICK = 1
         const val NOTIFICATION_CHANNEL_ID = "channel_id"
         const val NOTIFICATION_ID = 1
@@ -113,6 +115,14 @@ class edit_profile : Fragment() {
                     }
 
                     Toast.makeText(context, "Profile updated", Toast.LENGTH_SHORT).show()
+                    Glide.with(requireContext())
+                        .load(imageUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL) // Use DiskCacheStrategy.ALL to cache the image on disk
+                        .placeholder(R.drawable.anne) // Replace with your placeholder drawable
+                        .error(R.drawable.anne) // Replace with your error drawable
+                        .into(binding.profileImage)
+
+
                 }
             }
         }
@@ -134,7 +144,6 @@ class edit_profile : Fragment() {
     }
 
     private fun getImageUrlFromUri(imageUri: Uri): String {
-        // Convert the image URI to URL (this is a simple example, you may need to handle this differently)
         return imageUri.toString()
     }
 

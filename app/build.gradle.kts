@@ -63,8 +63,9 @@ dependencies {
     //calender
     implementation ("com.applandeo:material-calendar-view:1.9.0")
     //video & voice call
-    implementation ("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+")
+    implementation ("com.github.ZEGOCLOUD:zego_uikit_prebuilt_live_streaming_android:+")
     implementation ("com.github.ZEGOCLOUD:zego_uikit_signaling_plugin_android:+")
+    implementation("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+")
     //firebase
     implementation("com.google.firebase:firebase-messaging:23.4.1")
     implementation("com.google.firebase:firebase-firestore:24.10.2")

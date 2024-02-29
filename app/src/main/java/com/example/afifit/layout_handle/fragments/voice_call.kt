@@ -75,8 +75,8 @@ class voice_call : Fragment() {
     }
 
     private fun voiceCallServices(userID: String) {
-        val appID: Long = 10604617  // your App ID of Zoge Cloud Project
-        val appSign = "881fe055f2e0eaf71916a4f6b1cb04df981bdbe6e46ba7ecb74fa7a0f9a9bc38" // your App Sign of Zoge Cloud Project
+        val appID: Long = 1571827900  // your App ID of Zoge Cloud Project
+        val appSign = "05683870c6cf117a35f7b6b906336727de1fe75279fb7ba3b4399d355c99e464" // your App Sign of Zoge Cloud Project
         val application = requireActivity().application // Android's application context
         val callInvitationConfig = ZegoUIKitPrebuiltCallInvitationConfig()
         val notificationConfig = ZegoNotificationConfig()
