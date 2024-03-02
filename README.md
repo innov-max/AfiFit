@@ -46,7 +46,7 @@ Afifit is a comprehensive health monitoring solution that combines a custom Andr
   <img src="affit_hardware/screen4.jpeg" alt="App Screenshot" width="250"/>
   <img src="affit_hardware/screen5.jpeg" alt="App Screenshot" width="250"/>
 </div>
-## Demo Video
+##Demo Video
 
 [![Afifit Demo Video](affit_hardware/demo.jpeg))](https://youtu.be/8DCyiNHlaGk)
 
