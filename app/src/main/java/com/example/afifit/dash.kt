@@ -26,30 +26,34 @@ class dash : AppCompatActivity() {
         binding.bottomNavView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_home -> {
-                    supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-
+                    // Pop the back stack until the container is reached
+                    supportFragmentManager.popBackStack("mainfragContaier", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     true
                 }
                 R.id.navigation_nutrition -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.mainfragContaier, nutrition)
+                        .addToBackStack("mainfragContaier")
                         .commit()
                     true
                 }
                 R.id.navigation_prescription -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.mainfragContaier, drugs)
+                        .addToBackStack("mainfragContaier")
                         .commit()
                     true
                 }
                 R.id.navigation_exercise -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.mainfragContaier, exercise)
+                        .addToBackStack("mainfragContaier")
                         .commit()
                     true
                 }
                 else -> false
             }
         }
+
     }
 }

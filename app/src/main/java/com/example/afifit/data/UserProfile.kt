@@ -1,4 +1,4 @@
-package data
+package com.example.afifit.data
 
 data class UserProfile(
  val name: String = "",
@@ -6,3 +6,4 @@ data class UserProfile(
  val about: String = "",
  val imageUrl: String = ""
 )
+

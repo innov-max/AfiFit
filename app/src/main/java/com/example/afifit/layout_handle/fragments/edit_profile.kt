@@ -1,5 +1,6 @@
 package com.example.afifit.layout_handle.fragments
-import android.app.Activity
+
+import android.app.Activity.RESULT_OK
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -25,14 +26,18 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.afifit.R
+import com.example.afifit.data.EditProfileViewModel
+import com.example.afifit.data.UserProfile
 import com.example.afifit.databinding.FragmentEditProfileBinding
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import data.UserProfile
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,6 +45,7 @@ import kotlinx.coroutines.withContext
 class edit_profile : Fragment() {
     private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
+
     private lateinit var imageView: ImageView
     private lateinit var editTextName: EditText
     private lateinit var editTextOccupation: EditText
@@ -49,6 +55,8 @@ class edit_profile : Fragment() {
     private lateinit var buttonSelectImage: TextView
     private lateinit var buttonPushData: Button
 
+    private lateinit var viewModel: EditProfileViewModel
+
     companion object {
         const val REQUEST_IMAGE_PICK = 1
         const val NOTIFICATION_CHANNEL_ID = "channel_id"
@@ -57,10 +65,8 @@ class edit_profile : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-
-        }
         databaseReference = FirebaseDatabase.getInstance().reference.child("userProfiles")
+        viewModel = ViewModelProvider(this).get(EditProfileViewModel::class.java)
     }
 
     override fun onCreateView(
@@ -69,6 +75,16 @@ class edit_profile : Fragment() {
     ): View {
         _binding = FragmentEditProfileBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK && data != null) {
+            val imageUri: Uri = data.data!!
+            viewModel.selectedImageUri = imageUri
+            Glide.with(requireContext()).load(imageUri).into(imageView)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -89,83 +105,102 @@ class edit_profile : Fragment() {
 
         buttonPushData.setOnClickListener {
             if (!isNetworkAvailable()) {
-                Toast.makeText(context, "No network available. Please check your connection.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "No network available. Please check your connection.",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
+
             val name = editTextName.text.toString()
             val occupation = editTextOccupation.text.toString()
             val about = editTextAbout.text.toString()
 
             if (imageView.drawable == null) {
                 Toast.makeText(context, "Please select an image", Toast.LENGTH_SHORT).show()
-            } else if (TextUtils.isEmpty(name) || TextUtils.isEmpty(occupation) || TextUtils.isEmpty(about)) {
+            } else if (TextUtils.isEmpty(name) || TextUtils.isEmpty(occupation) || TextUtils.isEmpty(
+                    about
+                )
+            ) {
                 Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
             } else {
-                // Use lifecycleScope to launch a coroutine tied to the fragment's lifecycle
                 lifecycleScope.launch {
-                    // Get the image URL from the selected image
-                    val imageUrl = getImageUrlFromUri(imageView.tag as Uri)
+                    val userId = databaseReference.push().key
+                    if (userId != null) {
+                        val imageUri = viewModel.selectedImageUri
 
-                    val userProfile = UserProfile(name, occupation, about, imageUrl)
+                        if (imageUri != null) {
+                            withContext(Dispatchers.IO) {
+                                // Upload the image to Firebase Storage
+                                pushImageToFirebaseStorage(imageUri, userId)
+                            }
 
-                    // Use a background thread to perform the database transaction
-                    withContext(Dispatchers.IO) {
-                        pushDataToFirebase(userProfile)
-                        showNotification("Profile Update", "Your profile has successfully updated")
+                            showNotification("Profile Update", "Image uploaded successfully")
+
+                            // Load the image from Firebase Storage using the download URL
+                            loadImageFromFirebaseStorage(userId)
+
+                            // Save the rest of the user profile data to the Realtime Database
+                            val userProfile = UserProfile(name, occupation, about)
+                            databaseReference.child(userId).setValue(userProfile)
+
+                            Toast.makeText(context, "Profile updated", Toast.LENGTH_SHORT).show()
+                        } else {
+                            showNotification("Profile Update", "Error getting image URI")
+                        }
+                    } else {
+                        showNotification("Profile Update", "An error occurred, check your connection")
                     }
-
-                    Toast.makeText(context, "Profile updated", Toast.LENGTH_SHORT).show()
-                    Glide.with(requireContext())
-                        .load(imageUrl)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL) // Use DiskCacheStrategy.ALL to cache the image on disk
-                        .placeholder(R.drawable.anne) // Replace with your placeholder drawable
-                        .error(R.drawable.anne) // Replace with your error drawable
-                        .into(binding.profileImage)
-
-
                 }
             }
         }
+
         binding.profileBack.setOnClickListener {
             parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
         }
     }
 
-    private fun pushDataToFirebase(userProfile: UserProfile) {
-        // Push the data to Firebase
-        val userId = databaseReference.push().key
-        if (userId != null) {
-            databaseReference.child(userId).setValue(userProfile)
-        }
-        else{
-            showNotification("Profile Update", "an error occured check your connection")
+    private fun pushImageToFirebaseStorage(imageUri: Uri, userId: String) {
+        val storageReference =
+            Firebase.storage.reference.child("userProfileImages/$userId.jpg")
 
-        }
-    }
-
-    private fun getImageUrlFromUri(imageUri: Uri): String {
-        return imageUri.toString()
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK && data != null) {
-            // Handle the selected image
-            val selectedImageUri = data.data
-            // Load the selected image into the ImageView
-            imageView.setImageURI(selectedImageUri)
-            // Store the selected image URI in the tag for later use
-            imageView.tag = selectedImageUri
+        // Upload the image to Firebase Storage
+        storageReference.putFile(imageUri).addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                showNotification(
+                    "Profile Update",
+                    "Error uploading image to Firebase Storage"
+                )
+            }
         }
     }
 
-    // notification handling
+    private fun loadImageFromFirebaseStorage(userId: String) {
+        val storageReference =
+            Firebase.storage.reference.child("userProfileImages/$userId.jpg")
+
+        // Load the image from Firebase Storage using the download URL
+        storageReference.downloadUrl.addOnSuccessListener { uri ->
+            // Load the image using Glide
+            Glide.with(requireContext())
+                .load(uri)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .placeholder(R.drawable.anne)
+                .error(R.drawable.anne)
+                .into(binding.profileImage)
+        }.addOnFailureListener { exception ->
+            showNotification(
+                "Profile Update",
+                "Error loading image from Firebase Storage"
+            )
+        }
+    }
+
     private fun showNotification(title: String, message: String) {
         val notificationManager =
             requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Create a notification channel (required for Android Oreo and above)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
@@ -179,32 +214,28 @@ class edit_profile : Fragment() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        // Create a notification builder
         val builder = NotificationCompat.Builder(requireContext(), NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.logo)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
-        // Build the notification
         val notification = builder.build()
 
-        // Show the notification
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        // Use a Handler to delay the removal of the notification after 10 seconds
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
             notificationManager.cancel(NOTIFICATION_ID)
-        }, 10000) // 10000 milliseconds (10 seconds)
+        }, 10000)
     }
 
     private fun isNetworkAvailable(): Boolean {
-        val connectivityManager = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo: NetworkInfo? = connectivityManager.activeNetworkInfo
         return networkInfo != null && networkInfo.isConnected
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

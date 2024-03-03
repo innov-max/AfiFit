@@ -16,7 +16,7 @@ import com.google.firebase.database.ValueEventListener
 
 
 import com.zegocloud.uikit.service.defines.ZegoUIKitUser
-import data.UserProfile
+import com.example.afifit.data.UserProfile
 
 class video_call : Fragment() {
 

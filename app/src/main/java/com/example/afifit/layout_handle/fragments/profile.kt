@@ -29,7 +29,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import data.UserProfile
+import com.example.afifit.data.UserProfile
 import java.util.Locale
 
 class profile : Fragment(), LocationListener {

@@ -9,16 +9,26 @@
     android:background="@color/white"
    >
 
+    <TextView
+        android:text="Let's get your health on track"
+        android:textSize="20sp"
+        android:layout_marginTop="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:layout_gravity="center"/>
+
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/animation_view"
-        android:layout_margin="10dp"
         android:layout_width="160dp"
         android:layout_height="160dp"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
         android:layout_marginTop="10dp"
-        app:lottie_rawRes="@raw/pill"
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
-        android:layout_gravity="center"/>
+        app:lottie_rawRes="@raw/pill" />
+
     <TextView
         android:text="Today's Pills"
         android:textSize="20sp"
@@ -27,8 +37,20 @@
         android:layout_height="wrap_content"
         android:textColor="@color/black"
         android:layout_gravity="center"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <RadioButton
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:id="@+id/radioBtn1"
+            android:layout_width="32dp"
+            android:layout_height="48dp"
+            />
 
-    <androidx.cardview.widget.CardView
+
+        <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_rowWeight="1"
@@ -84,7 +106,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_gravity="center"
-            android:paddingStart="40dp">
+            android:paddingStart="20dp">
             <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
@@ -109,6 +131,19 @@
 
 
     </androidx.cardview.widget.CardView>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <RadioButton
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:id="@+id/radioBtn2"
+            android:layout_width="32dp"
+            android:layout_height="48dp"
+
+            />
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -165,7 +200,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_gravity="center"
-                android:paddingStart="60dp">
+                android:paddingStart="50dp">
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
@@ -190,6 +225,18 @@
 
 
     </androidx.cardview.widget.CardView>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <RadioButton
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:id="@+id/radioBtn3"
+            android:layout_width="32dp"
+            android:layout_height="48dp"
+            />
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -246,7 +293,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_gravity="center"
-                android:paddingStart="40dp">
+                android:paddingStart="35dp">
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
@@ -271,14 +318,19 @@
 
 
     </androidx.cardview.widget.CardView>
+    </LinearLayout>
 
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="5dp"
-        android:src="@drawable/plus" />
+    <TextView
+        android:text="Notify Practioner"
+        android:textSize="20sp"
+        android:layout_margin="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:id="@+id/pushData"
+        android:fontFamily="@font/allerta"
+        android:textStyle="bold|normal"
+        android:textColor="#03A9F4"/>
 
 
 

@@ -18,7 +18,7 @@ import com.zegocloud.uikit.prebuilt.call.config.ZegoNotificationConfig
 import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig
 import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService
 
-import data.UserProfile
+import com.example.afifit.data.UserProfile
 
 class voice_call : Fragment() {
 

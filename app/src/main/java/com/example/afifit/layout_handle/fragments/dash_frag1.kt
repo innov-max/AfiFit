@@ -1,14 +1,14 @@
 package com.example.afifit.layout_handle.fragments
 
 import android.Manifest
-import android.app.AlertDialog
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.ConnectivityManager
@@ -17,26 +17,27 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.afifit.R
+import com.example.afifit.data.UserProfile
 import com.example.afifit.databinding.FragmentDashFrag1Binding
+import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.storage
 import data.HealthData
-import data.UserProfile
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -50,6 +51,8 @@ class dash_frag1 : Fragment() {
     private var avgBpmTextView: TextView? = null
     private var bloodOxygenTextView: TextView? = null
     private var isWifiConnected: Boolean = false
+
+    private lateinit var sharedPreferences: SharedPreferences
 
     private val connectivityReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -69,7 +72,11 @@ class dash_frag1 : Fragment() {
 
     private companion object {
         private const val READ_EXTERNAL_STORAGE_REQUEST_CODE = 1
+        private const val profileImageUrlKey = "profileImageUrl"
     }
+
+    // Add this line for userId
+    private var userId: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -83,9 +90,14 @@ class dash_frag1 : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentDashFrag1Binding.bind(view)
 
+        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
+
         bpmTextView = binding?.bpm
         avgBpmTextView = binding?.brr
         bloodOxygenTextView = binding?.OxyValue
+
+        // Retrieve userId from your authentication system or wherever it is stored
+        userId = "yourUserId"
 
         displayGreeting()
         databaseReferenceUser = FirebaseDatabase.getInstance().reference.child("userProfiles")
@@ -103,20 +115,17 @@ class dash_frag1 : Fragment() {
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         requireContext().registerReceiver(connectivityReceiver, filter)
 
-        // Check for READ_EXTERNAL_STORAGE permission
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // Permission is not granted, request it
             ActivityCompat.requestPermissions(
                 requireActivity(),
                 arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
                 READ_EXTERNAL_STORAGE_REQUEST_CODE
             )
         } else {
-            // Permission is already granted, proceed with image loading
             loadImageWithGlide()
         }
 
@@ -126,7 +135,8 @@ class dash_frag1 : Fragment() {
 
         databaseReferenceUser.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val userProfile = dataSnapshot.children.firstOrNull()?.getValue(UserProfile::class.java)
+                val userProfile =
+                    dataSnapshot.children.firstOrNull()?.getValue(UserProfile::class.java)
                 userProfile?.let { updateUI(it) }
 
                 readDataFromFirebaseAndDisplay(bpmTextView!!, avgBpmTextView, bloodOxygenTextView)
@@ -141,7 +151,7 @@ class dash_frag1 : Fragment() {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val healthData = dataSnapshot.getValue(HealthData::class.java)
                 healthData?.let {
-                    // Additional logic for health data
+
                 }
             }
 
@@ -172,10 +182,12 @@ class dash_frag1 : Fragment() {
     }
 
     private fun checkWifiStatus(): Boolean {
-        val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        val connectivityManager =
+            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val networkCapabilities = connectivityManager?.getNetworkCapabilities(connectivityManager.activeNetwork)
+            val networkCapabilities =
+                connectivityManager?.getNetworkCapabilities(connectivityManager.activeNetwork)
             return networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
         } else {
             @Suppress("DEPRECATION")
@@ -201,77 +213,73 @@ class dash_frag1 : Fragment() {
             channel.enableVibration(true)
             notificationManager.createNotificationChannel(channel)
         }
-
-        // Create a notification builder
-        val builder = NotificationCompat.Builder(requireContext(),
+        val builder = NotificationCompat.Builder(
+            requireContext(),
             edit_profile.NOTIFICATION_CHANNEL_ID
         )
             .setSmallIcon(R.drawable.logo)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-
-        // Build the notification
         val notification = builder.build()
-
-        // Show the notification
         notificationManager.notify(edit_profile.NOTIFICATION_ID, notification)
-
-        // Use a Handler to delay the removal of the notification after 10 seconds
         handler.postDelayed({
             notificationManager.cancel(edit_profile.NOTIFICATION_ID)
-        }, 10000) // 10000 milliseconds (10 seconds)
+        }, 10000)
     }
 
     private fun updateUI(userProfile: UserProfile) {
         val databaseReference = FirebaseDatabase.getInstance().reference.child("userProfiles")
 
         binding?.UserName?.text = userProfile.name
-        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val userProfile = dataSnapshot.getValue(UserProfile::class.java)
 
-                // Check if userProfile is not null and has a valid imageUrl
-                if (userProfile != null && userProfile.imageUrl.isNotEmpty()) {
-                    activity?.runOnUiThread {
-                        binding?.let {
-                                it1 ->
-                            Glide.with(it1.profileImage)
-                                .load(userProfile.imageUrl)
-                                .into(it1.profileImage)
-                        }
-
-                    }
-                } else {
-                    // Handle the case where the image URL is not available
-                    // You can set a default image or handle it in another way
-                    // For example:
-                    binding?.let {
-                        Glide.with(requireContext())
-                            .load(R.drawable.anne) // Replace with your default image resource
-                            .into(it.profileImage)
-                    }
-                }
+        // Load profile image from URL stored in SharedPreferences
+        val storedImageUrl = sharedPreferences.getString(profileImageUrlKey, "")
+        if (storedImageUrl?.isNotEmpty() == true) {
+            Glide.with(requireContext())
+                .load(storedImageUrl)
+                .into(binding?.profileImage!!)
+        } else {
+            // If URL is not stored, load placeholder
+            binding?.let {
+                Glide.with(requireContext())
+                    .load(R.drawable.anne)
+                    .into(it.profileImage)
             }
+        }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Handle errors
-            }
-        })
+        // ... (other parts of the method)
+
     }
-
 
     private fun loadImageWithGlide() {
-        // Code to load the image using Glide
-        // Use this code where you are currently using Glide in your fragment
-        // For example, in the updateUI method
-        // ...
+        val storageReference =
+            Firebase.storage.reference.child("userProfileImages/$userId.jpg")
 
-        // Example:
-        // Glide.with(requireContext())
-        //     .load(userProfile.imageUrl)
-        //     .into(binding?.profileImage!!)
+        storageReference.metadata.addOnSuccessListener { metadata ->
+            // Check if the file exists
+            if (metadata.sizeBytes > 0) {
+                // File exists, proceed with download
+                storageReference.downloadUrl.addOnSuccessListener { uri ->
+                    // Save the profile image URL in SharedPreferences
+                    sharedPreferences.edit().putString(profileImageUrlKey, uri.toString()).apply()
+
+
+                    Glide.with(requireContext())
+                        .load(uri)
+                        .into(binding?.profileImage!!)
+                }.addOnFailureListener { exception ->
+                    Log.e(TAG, "Error getting download URL: $exception")
+                }
+            } else {
+                // File does not exist, handle accordingly
+                Log.e(TAG, "File does not exist at the specified location.")
+            }
+        }.addOnFailureListener { exception ->
+            Log.e(TAG, "Error getting metadata: $exception")
+        }
     }
+
 
     private fun readDataFromFirebaseAndDisplay(
         bpmTextView: TextView,
@@ -289,17 +297,22 @@ class dash_frag1 : Fragment() {
 
                         if (latestUserId != null) {
                             val latestUserData = dataSnapshot.child(latestUserId)
-                            val bpm = latestUserData.child("bpm").getValue(Float::class.java)
-                            val avgBpm = latestUserData.child("avgBpm").getValue(Int::class.java)
-                            val bloodOxygen = latestUserData.child("bloodOxygen").getValue(Int::class.java)
-                            val timestamp = latestUserData.child("timestamp").getValue(Long::class.java)
+                            val bpm =
+                                latestUserData.child("bpm").getValue(Float::class.java)
+                            val avgBpm =
+                                latestUserData.child("avgBpm").getValue(Int::class.java)
+                            val bloodOxygen =
+                                latestUserData.child("bloodOxygen").getValue(Int::class.java)
+                            val timestamp =
+                                latestUserData.child("timestamp").getValue(Long::class.java)
 
                             val bpmText = "BPM: ${bpm ?: 0.0f}"
                             val avgBpmText = "${avgBpm ?: 0} Per Min"
                             val bloodOxygenText = " ${bloodOxygen ?: 0}%"
 
                             val formattedTime =
-                                SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(timestamp ?: 0L)
+                                SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                                    .format(timestamp ?: 0L)
 
                             handler.post {
                                 bpmTextView.text = bpmText
