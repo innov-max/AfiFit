@@ -80,7 +80,7 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     // messaging
     implementation ("com.sendbird.sdk:sendbird-android-sdk:3.0.141")
-    implementation ("com.sendbird.sdk:sendbird-chat-ktx:4.15.2")
+    //implementation ("com.sendbird.sdk:sendbird-chat-ktx:4.15.2")
 
 
 

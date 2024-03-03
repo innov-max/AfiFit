@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.example.afifit.Messaging
 import com.example.afifit.calls
 import com.example.afifit.databinding.FragmentContactBinding
 
@@ -35,6 +36,12 @@ class contact : Fragment() {
 // Tostart here tomorrow
         binding?.btmCall?.setOnClickListener {
             val intent = Intent(requireContext(), calls::class.java)
+            startActivity(intent)
+        }
+
+        binding?.Consult?.setOnClickListener {
+
+            val intent = Intent(requireContext(), Messaging::class.java)
             startActivity(intent)
         }
 

@@ -15,6 +15,7 @@
         android:columnCount="2"
         android:rowCount="1">
         <androidx.cardview.widget.CardView
+            android:id="@+id/Consult"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_rowWeight="1"
@@ -38,7 +39,7 @@
                     android:layout_marginTop="10dp"
                     android:src="@drawable/warning" />
                 <TextView
-                    android:text="Cosultation"
+                    android:text="Consultation"
                     android:textSize="20sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

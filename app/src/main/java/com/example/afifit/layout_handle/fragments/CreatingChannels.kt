@@ -86,7 +86,7 @@ class CreatingChannels : Fragment(),ChannelCreateAdapter.OnItemCheckedChangeList
             } else {
                 val transaction = requireActivity().supportFragmentManager.beginTransaction()
                 transaction.addToBackStack(null)
-                transaction.replace(R.id.mainfragContaier, chat())
+                transaction.replace(R.id.FragmentContainerMessaging, chat())
                 transaction.commit()
 
             }

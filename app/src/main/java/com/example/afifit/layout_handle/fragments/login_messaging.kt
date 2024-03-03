@@ -37,7 +37,7 @@ class login_messaging : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        SendBird.init("APP_ID_HERE", requireContext())
+        SendBird.init("AB1BD2A2-7578-4C11-BBF6-90A9841D6577", requireContext())
         binding.btnLogin.setOnClickListener {
             connectToSendBird(binding.UserId.text.toString(), binding.NickName.text.toString())
         }

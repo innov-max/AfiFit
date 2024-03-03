@@ -1,5 +1,4 @@
 package com.example.afifit.layout_handle.fragments
-
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -18,7 +17,8 @@ class ChanneListFrag : Fragment(), ChannelListAdapter.OnChannelClickedListener {
 
     private val EXTRA_CHANNEL_URL = "EXTRA_CHANNEL_URL"
     lateinit var recyclerView: RecyclerView
-    lateinit var adapter: ChannelListAdapter
+
+    private lateinit var adapter: ChannelListAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -38,7 +38,9 @@ class ChanneListFrag : Fragment(), ChannelListAdapter.OnChannelClickedListener {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentChanneListBinding.bind(view)
 
-        val adapter = ChannelListAdapter(this)
+        // Use the class-level adapter property, not a local variable
+        adapter = ChannelListAdapter(this)
+
         val recyclerView = binding!!.recyclerGroupChannels
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -51,9 +53,8 @@ class ChanneListFrag : Fragment(), ChannelListAdapter.OnChannelClickedListener {
         }
 
         addChannels()
-
-
     }
+
     private fun addChannels() {
         val channelList = GroupChannel.createMyGroupChannelListQuery()
         channelList.limit = 100

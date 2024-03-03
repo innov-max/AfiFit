@@ -1,5 +1,5 @@
 package com.example.afifit.layout_handle.fragments
-import android.content.Intent
+
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,12 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.afifit.R
 import com.example.afifit.data.MessageAdapter
 import com.example.afifit.databinding.FragmentChatBinding
-import com.example.afifit.databinding.FragmentDashFrag1Binding
 import com.sendbird.android.*
 import com.sendbird.android.BaseChannel.SendUserMessageHandler
 import com.sendbird.android.GroupChannel.GroupChannelGetHandler
 import com.sendbird.android.SendBird.ChannelHandler
-
 
 class chat : Fragment() {
 
@@ -67,7 +65,7 @@ class chat : Fragment() {
                 override fun onMessageReceived(
                     baseChannel: BaseChannel,
                     baseMessage: BaseMessage
-                ){
+                ) {
                     if (baseChannel.url == channelUrl) {
                         // Add new message to view
                         adapter.addFirst(baseMessage)
@@ -88,29 +86,33 @@ class chat : Fragment() {
             transaction.addToBackStack(null)
             transaction.replace(R.id.FragmentContainerMessaging, ChanneListFrag())
             transaction.commit()
-
         }
 
         binding?.buttonGchatSend?.setOnClickListener {
             sendMessage()
         }
     }
-    private fun sendMessage()
-    {
-        val params = UserMessageParams()
-            .setMessage(binding?.editGchatMessage?.text.toString())
-        groupChannel.sendUserMessage(params,
-            SendUserMessageHandler { userMessage, e ->
-                if (e != null) {    // Error.
+
+    private fun sendMessage() {
+        if (::groupChannel.isInitialized) {
+            val params = UserMessageParams()
+                .setMessage(binding?.editGchatMessage?.text.toString())
+
+            groupChannel.sendUserMessage(params, SendUserMessageHandler { userMessage, e ->
+                if (e != null) {
+                    // Handle the error.
                     return@SendUserMessageHandler
                 }
                 adapter.addFirst(userMessage)
                 binding?.editGchatMessage?.text?.clear()
             })
+        } else {
+            // Handle the case where groupChannel is not initialized yet.
+            // You might want to show an error message or take appropriate action.
+        }
     }
 
     private fun getMessages() {
-
         val previousMessageListQuery = groupChannel.createPreviousMessageListQuery()
 
         previousMessageListQuery.load(
@@ -122,7 +124,6 @@ class chat : Fragment() {
             }
             adapter.loadMessages(messages!!)
         }
-
     }
 
     private fun setUpRecyclerView() {
@@ -135,6 +136,7 @@ class chat : Fragment() {
         recyclerView.layoutManager = layoutManager
         recyclerView.scrollToPosition(0)
     }
+
     private fun getChannelURl(): String {
         return arguments?.getString(EXTRA_CHANNEL_URL) ?: ""
     }
