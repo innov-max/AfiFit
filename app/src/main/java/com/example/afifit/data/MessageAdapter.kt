@@ -41,14 +41,13 @@ class MessageAdapter(context: Context) : RecyclerView.Adapter<RecyclerView.ViewH
         }
     }
     override fun getItemViewType(position: Int): Int {
-        val message = messages.get(position)
-        when (message) {
+        return when (val message = messages[position]) {
             is UserMessage -> {
-                if (message.sender.userId.equals(SendBird.getCurrentUser().userId)) return VIEW_TYPE_USER_MESSAGE_ME
-                else return VIEW_TYPE_USER_MESSAGE_OTHER
+                if (message.sender.userId.equals(SendBird.getCurrentUser().userId)) VIEW_TYPE_USER_MESSAGE_ME
+                else VIEW_TYPE_USER_MESSAGE_OTHER
             }
             //Handle other types of messages FILE/ADMIN ETC
-            else ->  return -1
+            else -> -1
         }
     }
     override fun getItemCount() = messages.size
@@ -56,11 +55,11 @@ class MessageAdapter(context: Context) : RecyclerView.Adapter<RecyclerView.ViewH
         when (holder.itemViewType) {
             VIEW_TYPE_USER_MESSAGE_ME -> {
                 holder as MyUserHolder
-                holder.bindView(context, messages.get(position) as UserMessage)
+                holder.bindView(context, messages[position] as UserMessage)
             }
             VIEW_TYPE_USER_MESSAGE_OTHER -> {
                 holder as OtherUserHolder
-                holder.bindView(context, messages.get(position) as UserMessage)
+                holder.bindView(context, messages[position] as UserMessage)
             }
             //Handle other types of messages FILE/ADMIN ETC
         }
