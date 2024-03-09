@@ -88,7 +88,7 @@ class chat : Fragment() {
             transaction.commit()
         }
 
-        binding?.buttonGchatSend?.setOnClickListener {
+        binding?.btnSend?.setOnClickListener {
             sendMessage()
         }
     }
