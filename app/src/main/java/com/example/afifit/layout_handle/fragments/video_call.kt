@@ -28,6 +28,7 @@ class video_call : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentVideoCallBinding.inflate(inflater, container, false)
+
         return binding?.root
 
     }

@@ -248,7 +248,6 @@ class dash_frag1 : Fragment() {
             }
         }
 
-        // ... (other parts of the method)
 
     }
 
@@ -319,6 +318,14 @@ class dash_frag1 : Fragment() {
                                 avgBpmTextView?.text = avgBpmText
                                 bloodOxygenTextView?.text = bloodOxygenText
                                 binding?.time?.text = "Time:$formattedTime"
+
+                                if(bpmText < 120.toString() && bpmText < 80.toString()){
+
+                                    showNotification("BPM Alert", "Your heart rate is within range no need to worry")
+                                } else{
+                                    showNotification("BPM Alert", "The wearable is getting inaccurate data please contact practioner")
+
+                                }
                             }
                         } else {
                             handler.post {
@@ -335,6 +342,7 @@ class dash_frag1 : Fragment() {
                             binding?.time?.text = "Last Update: N/A"
                         }
                     }
+
                 }
 
                 override fun onCancelled(error: DatabaseError) {

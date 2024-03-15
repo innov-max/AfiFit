@@ -24,7 +24,7 @@ class chat : Fragment() {
     private lateinit var adapter: MessageAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var groupChannel: GroupChannel
-    private lateinit var channelUrl: String
+    private  var channelUrl: String? = null
 
     private var binding: FragmentChatBinding? = null
 
@@ -94,10 +94,8 @@ class chat : Fragment() {
     }
 
     private fun sendMessage() {
-        if (::groupChannel.isInitialized) {
             val params = UserMessageParams()
                 .setMessage(binding?.editGchatMessage?.text.toString())
-
             groupChannel.sendUserMessage(params, SendUserMessageHandler { userMessage, e ->
                 if (e != null) {
                     // Handle the error.
@@ -106,10 +104,6 @@ class chat : Fragment() {
                 adapter.addFirst(userMessage)
                 binding?.editGchatMessage?.text?.clear()
             })
-        } else {
-            // Handle the case where groupChannel is not initialized yet.
-            // You might want to show an error message or take appropriate action.
-        }
     }
 
     private fun getMessages() {
@@ -137,7 +131,7 @@ class chat : Fragment() {
         recyclerView.scrollToPosition(0)
     }
 
-    private fun getChannelURl(): String {
-        return arguments?.getString(EXTRA_CHANNEL_URL) ?: ""
+    private fun getChannelURl(): String? {
+        return arguments?.getString(EXTRA_CHANNEL_URL)
     }
 }

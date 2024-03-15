@@ -54,7 +54,6 @@ class voice_call : Fragment() {
                 fragmentTransaction.replace(R.id.myFragmentContainerCall, videoCallFragment)
                 fragmentTransaction.addToBackStack(null)
                 fragmentTransaction.commit()
-
                 voiceCallServices(userId)
             }
 
