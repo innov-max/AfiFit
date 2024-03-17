@@ -75,7 +75,6 @@ class dash_frag1 : Fragment() {
         private const val profileImageUrlKey = "profileImageUrl"
     }
 
-    // Add this line for userId
     private var userId: String? = null
 
     override fun onCreateView(
@@ -96,7 +95,6 @@ class dash_frag1 : Fragment() {
         avgBpmTextView = binding?.brr
         bloodOxygenTextView = binding?.OxyValue
 
-        // Retrieve userId from your authentication system or wherever it is stored
         userId = "yourUserId"
 
         displayGreeting()
@@ -156,7 +154,6 @@ class dash_frag1 : Fragment() {
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                // Handle errors
             }
         })
     }
@@ -252,16 +249,10 @@ class dash_frag1 : Fragment() {
     private fun loadImageWithGlide() {
         val storageReference =
             Firebase.storage.reference.child("userProfileImages/$userId.jpg")
-
         storageReference.metadata.addOnSuccessListener { metadata ->
-            // Check if the file exists
             if (metadata.sizeBytes > 0) {
-                // File exists, proceed with download
                 storageReference.downloadUrl.addOnSuccessListener { uri ->
-                    // Save the profile image URL in SharedPreferences
                     sharedPreferences.edit().putString(profileImageUrlKey, uri.toString()).apply()
-
-
                     Glide.with(requireContext())
                         .load(uri)
                         .into(binding?.profileImage!!)
@@ -269,7 +260,7 @@ class dash_frag1 : Fragment() {
                     Log.e(TAG, "Error getting download URL: $exception")
                 }
             } else {
-                // File does not exist, handle accordingly
+
                 Log.e(TAG, "File does not exist at the specified location.")
             }
         }.addOnFailureListener { exception ->
