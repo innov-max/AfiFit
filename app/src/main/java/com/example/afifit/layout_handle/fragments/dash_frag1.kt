@@ -229,11 +229,9 @@ class dash_frag1 : Fragment() {
     }
 
     private fun updateUI(userProfile: UserProfile) {
-        val databaseReference = FirebaseDatabase.getInstance().reference.child("userProfiles")
 
         binding?.UserName?.text = userProfile.name
 
-        // Load profile image from URL stored in SharedPreferences
         val storedImageUrl = sharedPreferences.getString(profileImageUrlKey, "")
         if (storedImageUrl?.isNotEmpty() == true) {
             Glide.with(requireContext())
@@ -317,13 +315,19 @@ class dash_frag1 : Fragment() {
                                 bpmTextView.text = bpmText
                                 avgBpmTextView?.text = avgBpmText
                                 bloodOxygenTextView?.text = bloodOxygenText
-                                binding?.time?.text = "Time:$formattedTime"
+                                binding?.time?.text = "Last update:$formattedTime"
 
-                                if(bpmText < 120.toString() && bpmText < 80.toString()){
+                                if(bpmText < 44.toString() && bpmText > 0.toString()){
 
-                                    showNotification("BPM Alert", "Your heart rate is within range no need to worry")
-                                } else{
-                                    showNotification("BPM Alert", "The wearable is getting inaccurate data please contact practioner")
+                                    showNotification("BPM Alert", "Low glucose levels please contact health practitioner")
+                                } else if(bpmText <= 84.toString() && bpmText >= 45.toString()){
+
+                                    showNotification("BPM Alert", "glucose levels within range no need to worry")
+                                }else if(bpmText >= 45.toString()){
+                                    showNotification("BPM Alert", "glucose levels above normal please contact practitioner")
+                                }else
+                                {
+                                    showNotification("BPM Alert", "The wearable is getting inaccurate data please contact practitioner")
 
                                 }
                             }
