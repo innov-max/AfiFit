@@ -38,7 +38,7 @@ class ChanneListFrag : Fragment(), ChannelListAdapter.OnChannelClickedListener {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentChanneListBinding.bind(view)
 
-        // Use the class-level adapter property, not a local variable
+
         adapter = ChannelListAdapter(this)
 
         val recyclerView = binding!!.recyclerGroupChannels

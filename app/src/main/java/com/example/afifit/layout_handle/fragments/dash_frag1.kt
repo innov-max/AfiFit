@@ -11,6 +11,7 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.health.connect.datatypes.units.BloodGlucose
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -50,6 +51,7 @@ class dash_frag1 : Fragment() {
     private var bpmTextView: TextView? = null
     private var avgBpmTextView: TextView? = null
     private var bloodOxygenTextView: TextView? = null
+    private var glucose: TextView? = null
     private var isWifiConnected: Boolean = false
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -94,6 +96,7 @@ class dash_frag1 : Fragment() {
         bpmTextView = binding?.bpm
         avgBpmTextView = binding?.brr
         bloodOxygenTextView = binding?.OxyValue
+        glucose = binding?.bpm
 
         userId = "yourUserId"
 
@@ -182,14 +185,16 @@ class dash_frag1 : Fragment() {
         val connectivityManager =
             requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val networkCapabilities =
                 connectivityManager?.getNetworkCapabilities(connectivityManager.activeNetwork)
-            return networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+            networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true ||
+                    networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
         } else {
             @Suppress("DEPRECATION")
             val activeNetworkInfo = connectivityManager?.activeNetworkInfo
-            return activeNetworkInfo?.type == ConnectivityManager.TYPE_WIFI
+            activeNetworkInfo?.type == ConnectivityManager.TYPE_WIFI ||
+                    activeNetworkInfo?.type == ConnectivityManager.TYPE_MOBILE
         }
     }
 
@@ -197,7 +202,6 @@ class dash_frag1 : Fragment() {
         val notificationManager =
             requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Create a notification channel (required for Android Oreo and above)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 edit_profile.NOTIFICATION_CHANNEL_ID,
@@ -272,7 +276,8 @@ class dash_frag1 : Fragment() {
     private fun readDataFromFirebaseAndDisplay(
         bpmTextView: TextView,
         avgBpmTextView: TextView?,
-        bloodOxygenTextView: TextView?
+        bloodOxygenTextView: TextView?,
+
     ) {
         val databaseReference: DatabaseReference =
             FirebaseDatabase.getInstance().getReference("/bpm")
@@ -306,15 +311,20 @@ class dash_frag1 : Fragment() {
                                 bpmTextView.text = bpmText
                                 avgBpmTextView?.text = avgBpmText
                                 bloodOxygenTextView?.text = bloodOxygenText
+
+                                val Glucose = bpm
+                                val GlucoseConvert = (Glucose?.div(2)?.times(3))
+                                binding?.TempValue?.text = GlucoseConvert.toString()
+
                                 binding?.time?.text = "Last update:$formattedTime"
 
-                                if(bpmText < 44.toString() && bpmText > 0.toString()){
+                                if(GlucoseConvert.toString() <= 44.toString() && bpmText > 0.toString()){
 
                                     showNotification("BPM Alert", "Low glucose levels please contact health practitioner")
-                                } else if(bpmText <= 84.toString() && bpmText >= 45.toString()){
+                                } else if(GlucoseConvert.toString() <= 84.toString() && bpmText >= 45.toString()){
 
                                     showNotification("BPM Alert", "glucose levels within range no need to worry")
-                                }else if(bpmText >= 45.toString()){
+                                }else if(bpmText >= 85 .toString()){
                                     showNotification("BPM Alert", "glucose levels above normal please contact practitioner")
                                 }else
                                 {
